@@ -1,144 +1,186 @@
-# MedOrder AI
+# 💊 MedOrder AI
 
-AI-powered pharmaceutical call automation system built with n8n, OpenAI API, and AssemblyAI.
-
----
-
-## Overview
-
-MedOrder AI is an AI automation system designed for pharmaceutical warehouses and medical suppliers that process a high volume of medication orders.
-
-The system automates:
-
-- call processing
-- speech-to-text transcription
-- AI order analysis
-- structured data extraction
-- analytics and reporting
-
-The main goal of the project is to reduce manual work, optimize business operations, and minimize operational costs.
+**AI-powered pharmaceutical order automation & call intelligence system**  
+Built with n8n, OpenAI API, AssemblyAI, and Google Sheets
 
 ---
 
-## Problem
+## 🧬 Overview
 
-Traditional call-center workflows create several business problems:
+**MedOrder AI** is an intelligent automation system designed for pharmaceutical warehouses and medical suppliers that handle a high volume of phone-based orders.
 
-- Delays in processing orders
-- Human errors during data entry
-- High operational costs
-- Difficulties with analytics and reporting
-- Loss of potential customers
+The system combines:
 
----
-
-## Solution
-
-MedOrder AI fully automates the order processing pipeline using AI technologies.
-
-The workflow:
-
-- receives customer calls
-- converts speech to text
-- analyzes order information with AI
-- extracts structured order data
-- stores information in Google Sheets
-- generates analytics automatically
+- 🎧 Call processing automation
+- 🧠 AI-powered conversation analysis
+- 📝 Speech-to-text transcription
+- 📦 Structured order extraction
+- 📊 Real-time call analytics
 
 ---
 
-## Technologies
+## 🏥 Architecture (High-Level Flow)
+
+Incoming Call  
+↓  
+AssemblyAI (Speech-to-Text)  
+↓  
+OpenAI (AI Order Understanding)  
+↓  
+Structured Data Extraction  
+↓  
+Google Sheets Database  
+↓  
+Analytics & Reporting Layer
+
+---
+
+## ⚙️ Core Systems
+
+### 1️⃣ MedOrder AI (Order Processing Engine)
+
+Main system responsible for handling pharmaceutical orders:
+
+- receives call links or audio recordings
+- transcribes audio into text
+- extracts medical orders (drugs, quantities, pharmacy info)
+- structures data into JSON format
+- updates Google Sheets database
+
+![MedOrder AI](/images/medorder-overview.png)
+
+---
+
+### 2️⃣ Call AI Agent 📊
+
+Dedicated AI agent for analytics and insights:
+
+- call volume statistics
+- conversation quality analysis
+- extraction of key performance metrics
+- chat-based reporting interface
+- “Get call stats” tool integration
+
+![Call AI Agent](/images//callAIAgent.png)
+
+👉 Used as an internal analytics assistant for operational insights
+
+---
+
+## 🧠 AI Pipeline
+
+- 🎙 Speech-to-Text → AssemblyAI
+- 🧠 NLP Processing → OpenAI GPT
+- 📦 Data Structuring → AI agents + JSON parsing
+- 📊 Storage → Google Sheets
+- ⚡ Automation → n8n workflows
+
+---
+
+## 🧪 Problem (Before AI)
+
+Pharmaceutical warehouses face:
+
+- ⏱ delays in order processing
+- ❌ human errors in manual data entry
+- 💸 high operational costs from call center staff
+- 📉 lack of call analytics
+- 📞 lost customers due to slow response times
+
+---
+
+## 🚀 Solution (After AI)
+
+MedOrder AI fully automates the process:
+
+- ⚡ instant call processing
+- 🧠 AI-powered order understanding
+- 📊 automatic analytics generation
+- 📦 structured data without manual input
+- 💰 reduced operational costs
+
+---
+
+## 📊 Business Impact
+
+### Before (AS-IS)
+
+- 5 call center operators
+- slow order processing
+- manual data entry
+- high operational costs
+
+### After (TO-BE)
+
+- 2 operators + AI system
+- ~60% cost reduction
+- automated workflows
+- scalable without additional staff
+
+---
+
+## 🧠 Key Features
+
+- 🏥 Medical order extraction (drugs, quantities, pharmacy data)
+- 🎧 Call transcription (AssemblyAI)
+- 🧠 AI order interpretation (OpenAI)
+- 📊 Call analytics dashboard (AI Agent)
+- 📦 Google Sheets integration
+- 🔁 Fully automated n8n workflows
+
+---
+
+## 📈 Key Results
+
+- ⚡ 3–5x faster order processing
+- 💰 ~60% reduction in operational costs
+- 🎯 Reduced human error rate
+- 📊 Real-time call analytics
+- 📦 Structured pharmaceutical data pipeline
+
+---
+
+## 🛠 Technologies
 
 - n8n
 - OpenAI API
 - AssemblyAI
 - Google Sheets API
-- HTTP Requests
-- AI Agents
 - JavaScript
 - JSON
+- HTTP Webhooks
+- AI Agents
 
 ---
 
-## Workflow Architecture
+## 🔮 Future Improvements
 
-```text
-Incoming Call
-      ↓
-Speech-to-Text (AssemblyAI)
-      ↓
-AI Processing (OpenAI)
-      ↓
-Structured Order Extraction
-      ↓
-Google Sheets Database
-      ↓
-Analytics & Reporting
-```
+- 🧬 CRM integration for pharmacy systems
+- 📞 AI voice agents (fully automated calls)
+- 📊 advanced BI analytics dashboard
+- 🔄 real-time inventory synchronization
+- 🌐 multi-channel communication (Telegram / WhatsApp / calls)
 
 ---
 
-## Business Value
+## 🎯 Project Presentation
 
-### Before Automation (AS-IS)
+📊 Full MedOrder AI presentation:
 
-- 5 call-center operators
-- Slow order processing
-- High operational costs
-- Customer service delays
+👉 [Open Presentation](https://docs.google.com/presentation/d/1K8r66IE1sSUxMFZsY4tbzUR-tgNXoFJT)
 
-### After Automation (TO-BE)
+## 👨‍⚕️ Author
 
-- Automated order processing
-- Faster call handling
-- Reduced manual workload
-- Staff optimization from 5 to 2 operators
-- Cost reduction by 60%
-
----
-
-## Key Results
-
-### Efficiency
-
-AI processes calls significantly faster than manual operators.
-
-### Cost Reduction
-
-Operational expenses reduced by 60%.
-
-### Accuracy
-
-Automated workflows minimize human errors.
-
-### Scalability
-
-Easy integration with CRM systems, AI agents, and additional automation workflows.
-
----
-
-## Future Improvements
-
-- CRM integration
-- AI voice agents
-- Real-time inventory synchronization
-- Advanced analytics dashboard
-- Multi-channel order processing
-
----
-
-## Screenshots
-
-### Workflow
-
-![alt text](image.png)
-![alt text](image-1.png)
-
-## Author
-
-Mariana Koval
-
+**Mariana Koval**  
 Junior Fullstack Developer & AI Automation Engineer
 
-- LinkedIn: https://linkedin.com/in/mariana-koval-fullstack-developer
-- GitHub: https://github.com/Mariana331
+- 🔗 LinkedIn: https://linkedin.com/in/mariana-koval-fullstack-developer
+- 💻 GitHub: https://github.com/Mariana331
+
+---
+
+## 💡 Summary
+
+**MedOrder AI = AI-powered pharmaceutical operations layer**
+
+Transforms raw phone calls into structured medical orders and analytics, reduces manual work, and enables scalable automated pharmacy workflows.
