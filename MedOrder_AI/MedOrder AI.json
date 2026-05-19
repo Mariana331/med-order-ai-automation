@@ -1,0 +1,655 @@
+{
+  "name": "MedOrder AI",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }} | {{ $json.audio_url }} | {{ $json.status }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Ти AI Agent, який обробляє текст замовлення із дзвінків.\n\nЗАВДАННЯ:\n1. Визнач тон: позитивний, негативний або нейтральний\n2. Визнач категорію: \"замовлення\" або \"не замовлення\"\n3. Якщо це замовлення — витягни з тексту:\n   - Назву аптеки\n   - Адресу аптеки\n   - Код клієнта\n   - Список препаратів (назва, дозування, кількість)\n   - Загальну суму (якщо є)\n\nКРИТИЧНІ ПРАВИЛА:\n- Інструмент \"Add info about order\" викликається ТІЛЬКИ ОДИН РАЗ\n- Ніколи не викликай інструмент повторно\n- Не створюй декілька варіантів відповіді\n- Не вигадуй дані — використовуй ТІЛЬКИ інформацію з тексту\n- Якщо даних немає — залиш поле порожнім\n- Не задавай питань користувачу\n\nЯКЩО ТЕКСТ НЕ ПРО ЗАМОВЛЕННЯ:\nВстанови category: \"не замовлення\" і викликай інструмент з порожнім order.\n\nФОРМАТ ВИВОДУ (JSON):\n{\n  \"audio_url\": \"URL аудіо файлу\",\n  \"status\": \"done\",\n  \"tone\": \"позитивний|негативний|нейтральний\",\n  \"category\": \"замовлення|не замовлення\",\n  \"order\":\"текст замовлення\"\n}\n\nПРІОРИТЕТ: Викликати інструмент ОДИН РАЗ, навіть якщо дані неповні.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1296,
+        -304
+      ],
+      "id": "427356fd-aa9f-4fcc-9ba6-70995ae29ae6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        -192
+      ],
+      "id": "230b7cba-5e88-4964-906f-20f9c5628536",
+      "name": "Each every 2 minutes"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa699c8b-80ea-49e5-80e2-1138d383a7a9",
+              "name": "Recording URL",
+              "value": "={{ $json['Recording URL'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4ee95e4e-35ca-462c-893b-07d33e7503df",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -192
+      ],
+      "id": "555c1b1c-826c-4124-9330-ef0d538593b2",
+      "name": "Take an URL"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1lkuBLINuixOhb3wq5RxsEqkXTMZeLUr0xtvS3GekYIw/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lkuBLINuixOhb3wq5RxsEqkXTMZeLUr0xtvS3GekYIw/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -272,
+        -192
+      ],
+      "id": "d08f70fb-ec0b-4117-bed2-7a269f21a12f",
+      "name": "Get call in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zOpZ4YWnCtNsYljC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.assemblyai.com/v2/transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"audio_url\": \"{{ $json.url }}\",\n\"speech_models\": [\"universal-2\"],\n\"speaker_labels\": true,\n\"language_code\": \"uk\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        -192
+      ],
+      "id": "274ab5b3-af36-428f-8e5c-7136f740b958",
+      "name": "Post in AssemblyAI",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Mty0i7tYlqYfuP0a",
+          "name": "AssemblyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.assemblyai.com/v2/transcript/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        -192
+      ],
+      "id": "e5ec452e-4b59-4efe-b919-837744668ae9",
+      "name": "Get transcript",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Mty0i7tYlqYfuP0a",
+          "name": "AssemblyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e8042ae2-1ccd-4071-a358-65e345313bf1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "9c91aeb8-e282-4e29-9eb0-3408ce588056",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        -256
+      ],
+      "id": "cf7d568c-0aee-4327-8e06-090c93b006e0",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        -96
+      ],
+      "id": "9da0b805-85e3-4daf-bf30-663049ac96de",
+      "name": "Wait",
+      "webhookId": "a2b968d6-34cb-4a88-8561-74f9515a82e3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1c54ff35-cb82-4d70-b57e-bec6ede95313",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "d5cda79f-607c-42fc-b3ff-3c3654852dab",
+              "name": "audio_url",
+              "value": "={{ $json.audio_url }}",
+              "type": "string"
+            },
+            {
+              "id": "5906dc7d-f16c-4e5f-b00f-2575331cf534",
+              "name": "",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "19a260e5-290d-423f-9fc9-1a6ccc57235e",
+              "name": "status",
+              "value": "=done",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        -304
+      ],
+      "id": "428ce619-7d1f-464e-b331-f3d346fcfd27",
+      "name": "Take a text"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        -80
+      ],
+      "id": "cd2804bf-e2f3-44fb-a2a9-e10ca1c00373",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "a2Av8SOQypt9oweh",
+          "name": "OpenAI account 2 new"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to add info about order",
+        "workflowId": {
+          "__rl": true,
+          "value": "H2lUexc7hOlLqqOW",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/H2lUexc7hOlLqqOW",
+          "cachedResultName": "Add info about order"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('url', ``, 'string') }}",
+            "order": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('order', ``, 'string') }}",
+            "tone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tone', ``, 'string') }}",
+            "category": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('category', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "order",
+              "displayName": "order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -80
+      ],
+      "id": "a2bd695f-fbdf-44c9-9adb-b84901fa39cc",
+      "name": "Call 'Add info about order'"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  try {\n    let output = item.json.output;\n    \n    // Очищаємо від escaped символів\n    output = output.replace(/\\\\n/g, '').replace(/\\\\/g, '').trim();\n    \n    // Видаляємо можливі markdown блоки\n    output = output.replace(/```json/g, '').replace(/```/g, '').trim();\n    \n    // Парсимо JSON\n    const data = JSON.parse(output);\n    \n    // Якщо масив - беремо перший елемент\n    const parsed = Array.isArray(data) ? data[0] : data;\n    \n    return {\n      json: {\n        audio_url: parsed.audio_url || null,\n        status: parsed.status || null,\n        tone: parsed.tone || null,\n        category: parsed.category || null,\n        order: parsed.order || null,\n      }\n    };\n    \n  } catch (error) {\n    return {\n      json: {\n        error: 'Parse error: ' + error.message,\n        raw_output: item.json.output\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -304
+      ],
+      "id": "9c2d4e40-ab32-43ab-9be7-64bda54dc03c",
+      "name": "Parsed respond"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1lkuBLINuixOhb3wq5RxsEqkXTMZeLUr0xtvS3GekYIw/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lkuBLINuixOhb3wq5RxsEqkXTMZeLUr0xtvS3GekYIw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Take an URL').first().json.row_number }}",
+            "Status": "={{ $json.status }}",
+            "tone": "={{ $json.tone }}",
+            "category": "={{ $json.category }}",
+            "order": "={{ $json.order }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Recording URL",
+              "displayName": "Recording URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tone",
+              "displayName": "tone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "order",
+              "displayName": "order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1872,
+        -304
+      ],
+      "id": "19ffe431-7a8f-4980-a233-44a55302ef20",
+      "name": "Update row in MedOrder sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zOpZ4YWnCtNsYljC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const inputUrl = item.json['Recording URL'];\n  if (!inputUrl) {\n    return {\n      json: {\n        error: 'Recording URL is missing'\n      }\n    };\n  }\n\n  const match = inputUrl.match(/\\/d\\/([a-zA-Z0-9_-]+)/);\n\n  if (!match) {\n    return {\n      json: {\n        error: 'Invalid Google Drive URL',\n        original_url: inputUrl\n      }\n    };\n  }\n\n  const fileId = match[1];\n\n  return {\n    json: {\n      url: `https://drive.google.com/uc?export=download&id=${fileId}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -192
+      ],
+      "id": "207161fc-abbc-4d49-bde4-7e92753c38ce",
+      "name": "Code in JavaScript for changing URL"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Each every 2 minutes": {
+      "main": [
+        [
+          {
+            "node": "Get call in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get call in sheet": {
+      "main": [
+        [
+          {
+            "node": "Take an URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Take an URL": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript for changing URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post in AssemblyAI": {
+      "main": [
+        [
+          {
+            "node": "Get transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get transcript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Take a text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Take a text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Add info about order'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parsed respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsed respond": {
+      "main": [
+        [
+          {
+            "node": "Update row in MedOrder sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript for changing URL": {
+      "main": [
+        [
+          {
+            "node": "Post in AssemblyAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "eftCWq1rZomGyjCJ",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "ebc14cff-c79a-49d9-92c9-33350339a786",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "81473fd982cc26566df7414990cc4a8d275b553de1512546ed1b7f8740645aa0"
+  },
+  "id": "NyKlDa7OCRkxiz57",
+  "tags": []
+}
