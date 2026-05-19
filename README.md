@@ -47,7 +47,7 @@ Main system responsible for handling pharmaceutical orders:
 - structures data into JSON format
 - updates Google Sheets database
 
-![MedOrder AI](/images/medorder-overview.png)
+![MedOrder AI](/images/medOrderAI.png)
 
 ---
 
